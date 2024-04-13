@@ -35,6 +35,7 @@
       <option value="Good Shepherd">Good Shepherd</option>
       <option value="House of Blues">House of Blues Anaheim</option>
       <option value="Old Crow Smokehouse">Old Crow Smokehouse</option>
+      <option value="Knott's Berry Farm">Knott's Berry Farm</option>
       <option value="Other">Other</option>
     </select>
     <input
@@ -43,6 +44,7 @@
       placeholder="Enter other starting location"
       class="hidden"
     />
+
     <br />
     <label for="endLocation">Ending Location:</label>
     <select id="endLocation" onchange="toggleOtherInput('end')">
@@ -52,6 +54,7 @@
       <option value="Good Shepherd">Good Shepherd</option>
       <option value="House of Blues">House of Blues Anaheim</option>
       <option value="Old Crow Smokehouse">Old Crow Smokehouse</option>
+      <option value="Knott's Berry Farm">Knott's Berry Farm</option>
       <option value="Other">Other</option>
     </select>
     <input
@@ -60,6 +63,7 @@
       placeholder="Enter other ending location"
       class="hidden"
     />
+
     <br />
     <label for="distance">Distance (only for 'Other'):</label>
     <input
@@ -67,6 +71,7 @@
       id="distance"
       placeholder="Enter distance for 'Other'"
     />
+
     <br />
     <label for="startingMileage">Starting Mileage:</label>
     <input
@@ -75,13 +80,23 @@
       placeholder="Enter starting mileage"
       value="107000"
     />
+
     <br />
     <label for="dateTime">Date and Time:</label>
     <input type="datetime-local" id="dateTime" />
 
+    <br />
+    <label>Purpose:</label>
+    <select id="purpose">
+      <option value="Business">Business</option>
+      <option value="Personal">Personal</option>
+      <option value="Commute">Commute</option>
+      <option value="Unknown">Unknown</option>
+    </select>
+
+    <br />
     <button onclick="calculateMileage()">Calculate Mileage</button>
     <button onclick="copyToClipboard()">Copy to Clipboard</button>
-    <br />
     <button onclick="openCalendar()">Open Calendar</button>
     <button onclick="openGoogleDoc()">Open Google Mileage Doc</button>
 
@@ -105,6 +120,7 @@
           "Top Golf": 32,
           "Good Shepherd": 18,
           "House of Blues": 3.7,
+          "Knott's Berry Farm": 6.4,
         },
         "Sherman Oaks": {
           Fullerton: 49,
@@ -113,6 +129,7 @@
           "Top Golf": 23,
           "Good Shepherd": 43,
           "House of Blues": 52,
+          "Knott's Berry Farm": 46,
         },
       };
 
@@ -148,6 +165,7 @@
           document.getElementById("distance").value
         );
         let calculatedDistance = 0;
+        let purpose = document.getElementById("purpose").value;
 
         if (start === "Other" || end === "Other") {
           if (
@@ -187,7 +205,7 @@
         } else {
           document.getElementById(
             "result"
-          ).innerHTML = `Date and Time: ${formattedDateTime}<br>Starting Location: ${startLocationName}<br>Ending Location: ${endLocationName}<br>Your starting mileage was ${startMileage}<br>the distance was ${calculatedDistance} miles, and your ending mileage is ${endMileage}`;
+          ).innerHTML = `Date and Time: ${formattedDateTime}<br>Purpose: ${purpose}<br>Starting Location: ${startLocationName}<br>Ending Location: ${endLocationName}<br>Your starting mileage was ${startMileage}<br>The distance was ${calculatedDistance} miles, and your ending mileage is ${endMileage}`;
         }
       }
 
