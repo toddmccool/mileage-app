@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mileage Calculator</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; }
+  input, select, button { margin: 10px; }
+  #notification {
+    color: green;
+    display: none;
+    margin-top: 10px;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<h1>Mileage Calculator</h1>
+
+<label for="startLocation">Starting Location:</label>
+<select id="startLocation" onchange="toggleOtherInput('start')">
+  <option value="Fullerton">Fullerton</option>
+  <option value="Sherman Oaks">Sherman Oaks</option>
+  <option value="Disney">Disney</option>
+  <option value="Good Shepherd">Good Shepherd</option>
+  <option value="House of Blues">House of Blues Anaheim</option>
+  <option value="Old Crow Smokehouse">Old Crow Smokehouse</option>
+  <option value="Other">Other</option>
+</select>
+<input type="text" id="otherStartLocation" placeholder="Enter other starting location" class="hidden">
+
+<label for="endLocation">Ending Location:</label>
+<select id="endLocation" onchange="toggleOtherInput('end')">
+  <option value="Fullerton">Fullerton</option>
+  <option value="Sherman Oaks">Sherman Oaks</option>
+  <option value="Disney">Disney</option>
+  <option value="Good Shepherd">Good Shepherd</option>
+  <option value="House of Blues">House of Blues Anaheim</option>
+  <option value="Old Crow Smokehouse">Old Crow Smokehouse</option>
+  <option value="Other">Other</option>
+</select>
+<input type="text" id="otherEndLocation" placeholder="Enter other ending location" class="hidden">
+
+<label for="distance">Distance (only for 'Other'):</label>
+<input type="number" id="distance" placeholder="Enter distance for 'Other'">
+
+<label for="startingMileage">Starting Mileage:</label>
+<input type="number" id="startingMileage" placeholder="Enter starting mileage" value="107000">
+
+<label for="dateTime">Date and Time:</label>
+<input type="datetime-local" id="dateTime">
+
+<button onclick="calculateMileage()">Calculate Mileage</button>
+<button onclick="copyToClipboard()">Copy to Clipboard</button>
+<button onclick="openCalendar()">Open Calendar</button>
+<button onclick="openGoogleDoc()">Open Google Mileage Doc</button>
+
+<p id="result"></p>
+<p id="notification"></p>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const timeZoneOffset = new Date().getTimezoneOffset();
+  const hereNow = new Date(new Date().getTime() - timeZoneOffset * 60000);
+  document.getElementById('dateTime').value = hereNow.toISOString().slice(0,16);
+});
+
+const distances = {
+  "Fullerton": {
+    "Sherman Oaks": 49,
+    "Disney": 4.2,
+    "David Allen": 24,
+    "Top Golf": 32,
+    "Good Shepherd": 18,
+    "House of Blues": 3.7
+  },
+  "Sherman Oaks": {
+    "Fullerton": 49,
+    "Disney": 52,
+    "David Allen": 26,
+    "Top Golf": 23,
+    "Good Shepherd": 43,
+    "House of Blues": 52
+  }
+};
+
+function toggleOtherInput(location) {
+  let locationSelect = document.getElementById(location + 'Location');
+  let otherInput = document.getElementById('other' + location.charAt(0).toUpperCase() + location.slice(1) + 'Location');
+  if (locationSelect.value === 'Other') {
+    otherInput.classList.remove('hidden');
+  } else {
+    otherInput.classList.add('hidden');
+    otherInput.value = ''; // Clear the input if not 'Other'
+  }
+}
+
+function calculateMileage() {
+  let start = document.getElementById("startLocation").value;
+  let startLocationName = start !== 'Other' ? start : document.getElementById("otherStartLocation").value;
+  let end = document.getElementById("endLocation").value;
+  let endLocationName = end !== 'Other' ? end : document.getElementById("otherEndLocation").value;
+  let startMileage = document.getElementById("startingMileage").value;
+  let manualDistance = parseFloat(document.getElementById("distance").value);
+  let calculatedDistance = 0;
+
+  if (start === "Other" || end === "Other") {
+    if (startLocationName === '' || endLocationName === '' || isNaN(manualDistance) || manualDistance <= 0) {
+      alert("Please enter a valid distance and location names for 'Other'.");
+      return;
+    }
+    calculatedDistance = manualDistance;
+  } else {
+    calculatedDistance = distances[start] && distances[start][end] ? distances[start][end] :
+                         distances[end] && distances[end][start] ? distances[end][start] : 0;
+  }
+
+  let endMileage = parseFloat(startMileage) + calculatedDistance;
+  const dateTimeValue = document.getElementById('dateTime').value;
+  const [date, time] = dateTimeValue.split('T');
+  const [year, month, day] = date.split('-');
+  const hour = parseInt(time.split(':')[0]);
+  const minute = time.split(':')[1];
+  const amPm = hour >= 12 ? 'p.m.' : 'a.m.';
+  const formattedHour = ((hour + 11) % 12 + 1); // Convert 24hr to 12hr format
+  const formattedDateTime = `${month}-${day}-${year}, ${formattedHour}:${minute} ${amPm}`;
+
+  if (isNaN(endMileage)) {
+    document.getElementById("result").innerText = "ReEnter, something went wrong";
+  } else {
+    document.getElementById("result").innerHTML = `Date and Time: ${formattedDateTime}<br>Starting Location: ${startLocationName}<br>Ending Location: ${endLocationName}<br>Your starting mileage was ${startMileage}<br>the distance was ${calculatedDistance} miles, and your ending mileage is ${endMileage}`;
+  }
+}
+
+function copyToClipboard() {
+  navigator.clipboard.writeText(document.getElementById("result").innerText)
+    .then(() => {
+      document.getElementById("notification").innerText = 'Copied to clipboard!';
+      document.getElementById("notification").style.display = 'block';
+      setTimeout(() => {
+        document.getElementById("notification").style.display = 'none';
+      }, 2000); // Message disappears after 2 seconds
+    })
+    .catch(err => {
+      document.getElementById("notification").innerText = 'Error in copying text: ' + err;
+      document.getElementById("notification").style.display = 'block';
+      setTimeout(() => {
+        document.getElementById("notification").style.display = 'none';
+      }, 2000);
+    });
+}
+
+function openCalendar() {
+  window.open("https://calendar.google.com/calendar/r/month", "_blank");
+}
+
+function openGoogleDoc() {
+  window.open("https://docs.google.com/document/d/1saAeYWnuuqaT1Ja_mykBeUGFWQLDPCKZdM_2U_Yig50/edit?usp=sharing", "_blank");
+}
+</script>
+</body>
+</html>
